@@ -1,0 +1,27 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+// define CAN addresses according to CAN bus guidelines
+
+#define CAN_DRIVER_CONTROLS_BASE 0x500
+#define CAN_MOTOR_CONTROLLER_L_TX 0x200
+#define CAN_MOTOR_CONTROLLER_R_TX 0x220
+#define CAN_MOTOR_CONTROLLER_L_RX 0x300
+#define CAN_MOTOR_CONTROLLER_R_RX 0x320
+#define CAN_BMU_BASE 0x550
+#define CAN_FRONT_PCU 0x570
+#define CAN_REAR_PCU 0x590
+#define CAN_LIGHTS 0x730
+#define CAN_CHARGER_TX 0x1806E5F4
+#define CAN_CHARGER_RX 0x18FF50E5
+#define CAN_FRONT_IVT 0x520
+#define CAN_REAR_IVT 0x530
+#define CAN_MPPT_TX 0x202
+#define CAN_MPPT_RX_1 0x180
+#define CAN_MPPT_RX_2 0x280
+#define CAN_MPPT_RX_3 0x480
+
+
+
+
+#endif
