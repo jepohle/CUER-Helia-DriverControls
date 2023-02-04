@@ -60,16 +60,12 @@
 #define REAR_FOG_PIN p13
 #define FRONT_FOG_PIN p12
 #define HEADLIGHTS_PIN p11
-#define NITROUS_PIN p10
-#define HANDBRAKE_PIN p9
+// #define NITROUS_PIN p10
+// #define HANDBRAKE_PIN p9
 #define REVERSE_PIN p8
 #define REGEN_EN_PIN p7
 #define SOLAR_PIN p6
 #define IGNITION_PIN p5
-
-
-
-
 
 
 // Define variables
@@ -80,24 +76,11 @@ bool solar_state = false;
 bool rightIndicatorActive = false;
 bool leftIndicatorActive = false;
 bool hornActive = false;
-
+int gearMultiplier = 1;       //variable is 1 when in forward drive and -1 when in reverse, simply multiply with the speed demand to change motor direction.
 int driveMode = 0;    //Modes correspond to 0: regular torque controlled full throw driving
                   //                    1: low power single motor drive, motor allocated randomly, unless error in one motor controller
                   //                    2: no regen, just coast to stop when throttle lifted
                   //                    3: 
-// int cruise_dec;
-// int cruise_inc;
-// int hazards;
-// int right_ind;
-// int left_ind;
-// int front_fog;
-// int rear_fog;
-// int regen_en;
-// int solar_en;
-// int horn;
-
-// float throttle;
-// float brake;
 float speedSetpoint;
 float motorCurrentSetpoint;
 float maxBusCurrentSetpoint;
@@ -130,7 +113,7 @@ void ignitionIT_Callback(void);
 void gearIT_Callback(void);
 void cruiseIT_Callback(void);
 void modeIT_Callback(void);
-
+void send_status_message(void);
 
 
 // Initialise all IO
@@ -195,6 +178,8 @@ void sendDriveCommand(float, float, float, int){
 }
 
 void ignitionIT_Callback(void){
+    ignition_state = !ignition_state;         //flip ignition flag
+
 
 }
 
@@ -203,11 +188,12 @@ void gearIT_Callback(void){
 }
 
 void cruiseIT_Callback(void){
-
+    cruise_state = true;
 }
 
 void modeIT_Callback(void){
-
+    driveMode++;
+    driveMode = driveMode % 3;
 }
 
 void Error_Handler(void){
@@ -215,11 +201,27 @@ void Error_Handler(void){
     TxMessage.format = CANStandard;
     TxMessage.id = CAN_DRIVER_CONTROLS_BASE;
     TxMessage.data[0] = 0b10000000;
-    TxMessage.len = 1;   
+    TxMessage.len = 1;
     while(1){
         CAN1.write(TxMessage);
+        wait(500);
     }
 }
+
+void send_status_message(void){
+    bool gear_state;
+    if(gearMultiplier < 0){
+        gear_state = false;
+    }
+    else{
+        gear_state = true;
+    }
+    TxMessage.format = CANStandard;
+    TxMessage.id = CAN_DRIVER_CONTROLS_BASE;
+    TxMessage.data[0] = ignition || gear_state << 1 || brake_state << 2 || solar_state << 3 || cruise_state << 4 || driveMode << 6;
+    TxMessage.len = 1;
+    CAN1.write(TxMessage);
+    }
 
 // Function to set flags according to IO states.
 void ReadIO(void){
